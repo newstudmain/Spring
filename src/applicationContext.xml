@@ -1,0 +1,887 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xmlns:aop="http://www.springframework.org/schema/aop"
+    xmlns:context="http://www.springframework.org/schema/context"
+    xmlns:tx="http://www.springframework.org/schema/tx"
+    xsi:schemaLocation="http://www.springframework.org/schema/beans
+        http://www.springframework.org/schema/beans/spring-beans.xsd
+        http://www.springframework.org/schema/aop
+		http://www.springframework.org/schema/aop/spring-aop.xsd
+		http://www.springframework.org/schema/context
+		http://www.springframework.org/schema/context/spring-context.xsd
+		http://www.springframework.org/schema/tx
+       	http://www.springframework.org/schema/tx/spring-tx.xsd">
+        
+        
+	<bean id="peo" class="com.IOC.pojo.People">
+		<constructor-arg index="0" value="123"></constructor-arg>
+		<constructor-arg index="1" value="zhangsan"></constructor-arg>
+	</bean>
+	
+	<bean id="factory" class="com.IOC.pojo.PeopleFactory"></bean>
+	<bean id="peoIns" factory-bean="factory" factory-method="createInstance"></bean>    
+	
+	<bean id="peoInsSt" class="com.IOC.pojo.PeopleFactory" factory-method="newInstance"></bean>
+        
+    <bean id="Inpeo" class="com.IOC.pojo.People">
+    	<property name="id" value="001"></property>
+    	
+    	<property name="name">
+    		<value>jack</value>
+    	</property>
+    	
+    	<property name="sets">
+    		<set>
+    			<value>s1</value>
+    			<value>s2</value>
+    		</set>
+    	</property>
+    	
+    	<property name="lists">
+    		<list>
+    			<value>L1</value>
+    			<value>L2</value>
+    		</list>
+    	</property>
+    	<!-- 如果 lists 中就只有一个值 <property name="lists" value="L1"></property> -->
+    	
+    	<property name="arrs">
+    		<array>
+    			<value>a1</value>
+    			<value>a2</value>
+    		</array>
+    	</property>
+    	<!-- 如果 strs_arr 中就只有一个值 <property name="arrs" value="a1"></property> -->
+    	
+    	<property name="maps">
+    		<map>
+    			<entry key="k1" value="v1"></entry>
+    			<entry key="k2" value="v2"></entry>
+    		</map>
+    	</property>
+    	
+		  <!-- 
+		  		<property name="pro">
+		    		<props>
+		    			<prop key="a">p01</prop>
+		    		</props>
+		    	</property>
+		   -->  
+		   	
+    	<property name="desk" ref="desk">
+    		
+    	</property>
+    </bean>  
+    
+     <bean id="desk" class="com.IOC.pojo.Desk"></bean>
+     
+     
+     
+     										<!-- Spring 整合MyBatis -->
+<!-- 
+  <environments default="development">
+	    <environment id="development">
+	      <transactionManager type="JDBC"/>
+	      <dataSource type="POOLED">
+	        <property name="driver" value="${driver}"/>
+	        <property name="url" value="${url}"/>
+	        <property name="username" value="${user}"/>
+	        <property name="password" value="${password}"/>
+	      </dataSource>
+    </environment>
+ </environments>
+-->
+     <!-- 
+	        <property name="driver" value="oracle.jdbc.OracleDriver"/>
+	        <property name="url" value="jdbc:oracle:thin:@127.0.0.1:1521:XE"/>
+	        <property name="username" value="jdsy1707"/>
+	        <property name="password" value="jdsy1707"/>
+	        
+	        	        	需要的相关jar：(包含Spring和MyBatis基础包)
+	        				spring-jdbc-4.1.6.RELEASE	>>DriverManagerDataSource.class
+	        				mybatis-spring-1.2.3.jar	>>SqlSessionFactoryBean.class
+	        				spring-tx-4.1.6.RELEASE.jar 
+	        				spring-aop-4.1.6.RELEASE.jar
+	        
+	        数据源封装类
+	        class DriverManagerDataSource extends AbstractDriverBasedDataSource
+		        	private String url;	public void setUrl(String url) {...}
+					private String username;public void setUsername(String username) {...}
+					private String password;public void setPassword(String password) {...}
+					
+			class DriverManagerDataSource		
+						public void setDriverClassName(String driverClassName) {...}
+						
+			 class SqlSessionFactoryBean
+			 		private DataSource dataSource;public void setDataSource(DataSource dataSource) {...}
+			 		
+      -->
+      <!-- 数据源封装类，配置数据库信息dataSource-->
+     <bean id="dataSource" class="org.springframework.jdbc.datasource.DriverManagerDataSource">
+     	<property name="driverClassName" value="oracle.jdbc.OracleDriver"></property>
+     	<property name="url" value="jdbc:oracle:thin:@127.0.0.1:1521:XE"></property>
+     	<property name="username" value="jdsy1707"></property>
+     	<property name="password" value="jdsy1707"></property>
+     </bean>
+     
+     <!-- 创建sqlSessionFactory对象，数据库连接信息来自dataSource -->
+     <bean id="sqlSessionFactory" class="org.mybatis.spring.SqlSessionFactoryBean">
+     	<property name="dataSource" ref="dataSource"></property>
+     </bean>
+     
+     <!-- 
+     		<mappers>
+     		    <mapper resource="SimpleDemo/dao/EmpMapper.xml"/>
+			    <mapper resource="SimpleDemo/dao/DeptMapper.xml"/>
+			    <mapper resource="SimpleDemo/dao/EmpDynamicMapper.xml"/>
+  			</mappers>
+  			
+  			扫描器：<package name="com.Spr_Mybatis.Mapper"/>
+  			MapperScannerConfigurer.class
+  				 private String basePackage;public void setBasePackage(String basePackage) {...}
+  				 private SqlSessionFactory sqlSessionFactory;
+  				
+      -->
+      <!-- 扫描器：相当于<package name="com.Spr_Mybatis.Mapper"/> ，扫描后会给对应接口创建对象-->
+      <bean id="mappers" class="org.mybatis.spring.mapper.MapperScannerConfigurer">
+      	<!-- 设置包名 -->
+      	<property name="basePackage" value="com.Spr_Mybatis.Mapper"></property>
+      	<!-- 和sqlSessionFactory产生关系，Factory需要加载进Mappers映射文件 -->
+      	<property name="sqlSessionFactory" ref="sqlSessionFactory"></property>
+      </bean>
+      
+     
+     <!-- 
+     		测试执行 
+     		SqlSessionFactory sqlSessionFactory = ac.getBean("sqlSessionFactory",SqlSessionFactory.class);
+		/*
+		 *  names: dataSource
+			names: sqlSessionFactory
+			names: mappers    //<bean id="mappers" class="org.mybatis.spring.mapper.MapperScannerConfigurer">
+			names: empMapper //说明此时通过mappers 标签中的package MyBatis已经创建了包中相关Mapper
+			names: org.springframework.context.annotation.internalConfigurationAnnotationProcessor
+			names: org.springframework.context.annotation.internalAutowiredAnnotationProcessor
+			names: org.springframework.context.annotation.internalRequiredAnnotationProcessor
+			names: org.springframework.context.annotation.internalCommonAnnotationProcessor
+			names: org.springframework.context.annotation.ConfigurationClassPostProcessor.importAwareProcessor
+			names: org.springframework.context.annotation.ConfigurationClassPostProcessor.enhancedConfigurationProcessor
+		 * */
+      -->
+     <!-- 由Spring管理Service实现类 -->
+     <bean id="empServiceImpl" class="com.Spr_Mybatis.Service.EmpServiceImpl">
+     	<property name="empMapper" ref="empMapper"></property>
+     </bean>
+     
+    						 					<!-- Spring 整合Servlet -->
+     <!-- 
+     	参见web.xml文件
+     					需要的相关jar：(包含Spring基础包)
+     						spring-web-4.1.6.RELEASE.jar	>>ContextLoaderListener.class
+     						
+     						ContextLoaderListener.class 去引导监听Spring's root [WebApplicationContext] 的启动和关闭
+     									interface WebApplicationContext extends ApplicationContext{}
+     									
+     						 Create a new {@code ContextLoaderListener} that will create a web application context 
+     						 based on the "contextClass" and "contextConfigLocation" servlet context-params.
+			     								<context-param>
+													<param-name>contextConfigLocation</param-name>
+													<! Spring的配置文件地址  >
+													<param-value>classpath:applicationContext.xml</param-value>
+												</context-param>
+     						
+     					使用tomcat提供的，启动时自动加载其他相关的xml配置文件功能，将Spring配置文件提前引入
+								     	<web-app>
+											<-监听器 帮助加载Spring的配置文件 ->
+											<listener>
+												<listener-class>
+													org.springframework.web.context.ContextLoaderListener
+												</listener-class>
+											</listener>
+										</web-app>
+      -->
+     
+     											<!-- Spring AOP 面向切面编程 
+     											
+ 	/*正常程序执行流程都是纵向执行流程
+	 * 	aopTest.test1();
+	    |
+		aopTest.test2();
+		|
+		aopTest.test3();
+	 *
+	 *在原来的纵向执行流程，加上前置通知或者后置通知。
+		 - 不需要去修改原有代码     [高扩展]
+		 - 原有功能释放了部分逻辑 [职责单一明确]
+		 
+		 	aopTest.test1();																|
+		    |[前置通知]相对			//在切点之前执行的功能     before advice    |						|把切面嵌入到原有功能的过程
+			aopTest.test2();	//原有功能: 切点     pointcut             | >> 所有功能总称叫做 切面		|		
+			|[后置通知]相对			//在切点之后执行的功能   after advice      |						| 		织入
+			aopTest.test3();																|
+		
+		[前置通知]相对  | aopTest.test2(); | [后置通知]相对                                                 >> 所有功能总称叫做 切面
+		
+		- 如果切点执行过程中出现异常, 会触发异常通知 	throws advice
+		
+	 *横向切面
+	 *在程序原有纵向执行流程中,针对某一个或某一些方法添加通知,形成横切面
+	 *
+	 *AOP 面向切面编程
+	 *形成横切面过程就叫做面向切面编程.
+	 *
+	 * */    																															-->
+     <!-- 
+     					需要的相关jar：(包含Spring基础包)
+     						spring-aop-4.1.6.RELEASE.jar	
+     						spring-aspects-4.1.6.RELEASE.jar
+     						spring-tx-4.1.6.RELEASE.jar
+     						
+     						aopalliance.jar
+     						aspectjweaver.jar
+     						
+							<?xml version="1.0" encoding="UTF-8"?>
+							<beans xmlns="http://www.springframework.org/schema/beans"
+							    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+							    xmlns:aop="http://www.springframework.org/schema/aop"
+							    xsi:schemaLocation="http://www.springframework.org/schema/beans
+							        http://www.springframework.org/schema/beans/spring-beans.xsd
+							        http://www.springframework.org/schema/aop
+							        http://www.springframework.org/schema/aop/spring-aop.xsd">
+						        
+						引入约束： xmlns:aop="http://www.springframework.org/schema/aop"
+										   http://www.springframework.org/schema/aop
+							        	   http://www.springframework.org/schema/aop/spring-aop.xsd
+							        	   
+						1 Schema-based
+								1.1 每个通知都需要实现接口或类
+									public class MyBeforeAdvice implements MethodBeforeAdvice
+											@Override
+											public void before(Method arg0, Object[] arg1, Object arg2) throws Throwable {}
+									public class MyAfterAdvice implements AfterReturningAdvice
+											@Override
+											public void afterReturning(Object arg0, Method arg1, Object[] arg2, Object arg3) throws Throwable {}
+								
+								1.2 配置 spring 配置文件时在<aop:config>配置
+									expression="execution(* com.aop.test.AOPTest.test2())"
+											* 通配符	匹配任意方法名,任意类名,任意一级包名
+												* com.aop.test.AOPTest.*()	//为com.aop.test.AOPTest 下所有方法添加通知，区分有参无参
+											如果希望匹配任意方法参数 (..)
+												* com.aop.test.AOPTest.*(...)
+												>>
+												* com.aop.test.*.*(...)
+												
+											实际业务中大多数情况都是拦截service实现类的方法。
+												
+								public void before(Method arg0, Object[] arg1, Object arg2)
+									切点方法对象： arg0方法名： test2
+									切点方法参数： [Ljava.lang.Object;@7241a47d
+									切点所在类对象： com.aop.test.AOPTest@10a9d961
+									
+								public void afterReturning(Object arg0, Method arg1, Object[] arg2, Object arg3)
+									切点返回值： null
+									切点方法对象： arg1方法名： test2
+									切点方法参数： [Ljava.lang.Object;@7241a47d
+									切点所在类对象： com.aop.test.AOPTest@10a9d961
+								
+								
+      -->												
+     											<!-- 配置AOP -->
+     <!-- 配置切面 -->
+     <aop:config>
+     	<!-- 配置切点 -->
+     	<aop:pointcut expression="execution(* com.aop.test.AOPTest.test2())" id="mypoint"/>
+     	<!-- 配置通知 -->
+     	<aop:advisor advice-ref="mybeforadvice" pointcut-ref="mypoint"/>
+     	<aop:advisor advice-ref="myafteradivce" pointcut-ref="mypoint"/>
+     </aop:config>
+     
+     <bean id="mybeforadvice" class="com.aop.advice.MyBeforeAdvice"></bean>
+     <bean id="myafteradivce" class="com.aop.advice.MyAfterAdvice"></bean>
+     
+     <!-- 测试类 -->
+     <bean id="aoptest" class="com.aop.test.AOPTest"></bean>
+     
+     
+     <!-- 配置异常通知 -->
+     <!-- 
+		     	1. 只有当切点报异常才能触发异常通知
+				2. 在 spring 中有 AspectJ 方式提供了异常通知的办法.
+					如果希望通过 schema-base 实现需要按照特定的要求自己编写方法
+					
+				一 . AspectJ 方式实现
+				
+					//aspect中不需要继承实现规范，按照特定的要求自己编写方法，所以配置文件中需要指定异常类bean
+					public class MyThrowAdvice {
+						public void myExpection() {
+							System.out.println("MyThrowAdvice...myExpection()...Throws ");
+						}
+					}
+					
+					public void test3() throws IOException {
+						System.out.println("test3");
+						throw new IOException();
+					}
+					
+					test3
+					MyThrowAdvice...myExpection()...Throws 
+					测试throwing
+					
+					注意：
+						test3() throws IOException 中没有处理异常
+						如果在切点方法中，已经捕获了异常，那么异常通知将无效。
+						实际业务中service实现类中的异常通常不捕获
+						
+					1 <aop:aspect>的 ref 属性表示:方法在哪个类中.
+					2 <aop: xxxx/> 表示什么通知
+					3 method: 当触发这个通知时,调用哪个方法
+					4 throwing: 异常对象名,必须和通知中方法参数名相同(可以不在通知中声明异常对象)
+					
+						public class MyThrowAdvice {
+						public void myExpection(IOException e) {
+							System.out.println("MyThrowAdvice...myExpection()...Throws "+e.getMessage());
+							}//MyThrowAdvice...myExpection()...Throws test3() throws IOException
+						}
+						
+						throwing="e"
+						
+				二. schema-base 实现
+					新建一个类实现 ThrowsAdvice 接口
+					必须自己写方法,且必须叫 afterThrowing
+						有两种参数方式 一个或者4个
+						异常类型要与切点报的异常类型一致
+						
+					public class RemoteThrowsAdvice implements ThrowsAdvice {
+					    //两种方法通常只选择一种，
+					    public void afterThrowing(Exception ex) throws Throwable {
+					        // Do something with remote exception
+					    }
+					    
+					    public void afterThrowing(Method m, Object[] args, Object target, ServletException ex) {
+				        	// Do something with all arguments
+				    	}
+					}
+      -->
+		     <!-- aspectJ 方式 -->
+		     <aop:config>
+		     	<aop:aspect ref="mythrowadvice">
+		     		<aop:pointcut expression="execution(* com.aop.test.AOPTest.test3())" id="mypointthrowingAspectJ"/>
+		     		<aop:after-throwing method="myExpection" pointcut-ref="mypointthrowingAspectJ" throwing="e"/>
+		     	</aop:aspect>
+		     </aop:config>
+		     <!-- aspectJ 方式需要指定异常类bean -->
+		     <bean id="mythrowadvice" class="com.aop.advice.MyThrowAdvice"></bean>
+		     
+		     <!-- Base_on 方式 -->
+		     <aop:config>
+		     	<aop:pointcut expression="execution(* com.aop.test.AOPTest.test5())" id="mypointthrowingBase_on"/>
+		     	<aop:advisor advice-ref="mythrowadvice" pointcut-ref="mypointthrowingBase_on" />
+		     </aop:config>
+     
+     <!-- 配置环绕通知 -->
+     <!-- 
+     		把前置通知和后置通知都写到一个通知中,组成了环绕通知
+     		
+     		一. schema-base 实现
+     			1.  新建一个类实现 MethodInterceptor 接口
+     				public class MyAround implements MethodInterceptor{
+						@Override
+						public Object invoke(MethodInvocation arg0) throws Throwable {
+							System.out.println("环绕-前置");
+							Object result = arg0.proceed();//放行,调用切点方式System.out.println("环绕-后置");
+							System.out.println("环绕-后置");
+							return result;
+						}
+					}
+				
+			二. aspectJ 实现	
+					不需要实现	MethodInterceptor 接口
+							class MyAroundAspectJ {
+								public void befor() {
+									System.out.println("环绕-前置...AspectJ");
+								}
+								public void after() {
+									System.out.println("环绕-后置...AspectJ");
+								}
+								public void throwsEx(Exception e) {
+									System.out.println("环绕中异常通知/MyAroundAspectJ...throwsEx(e)...AspectJ: "+e.getMessage());
+								}
+							}
+					后置环绕的两个标签：
+						aop:after	: 当切点方法中有异常时，次标签声明的后置通知否出现异常都执行
+						aop:after-returning :当切点方法中有异常时，次标签声明的后置通知在异常后不执行，只有当切点正确执行时执行
+							<aop:after method="after" pointcut-ref="mypointaroundAspectj"/>
+				      		<aop:after-returning method="after" pointcut-ref="mypointaroundAspectj"/>
+				      	
+				      	当切点方法中没有异常，aop:after和aop:after-returning同时声明时，后置通知执行顺序和配置顺序有关
+				      	
+				      	环绕通知需要携带ProceedingJoinPoint类型的参数
+						环绕通知类似于动态代理的全过程：ProceedingJoinPoint类型的参数可以决定是否执行目标方法。
+						而且环绕通知必须有返回值，返回值即为目标方法的返回值
+      -->
+      <!-- Base_on 方式 -->
+      <bean id="myaroundbaseon" class="com.aop.advice.MyAroundBaseon"></bean>
+      <aop:config>
+      	<aop:pointcut expression="execution(* com.aop.test.AOPTest.test6())" id="mypointaroundBase_on"/>
+      	<aop:advisor advice-ref="myaroundbaseon" pointcut-ref="mypointaroundBase_on"/>
+      </aop:config>
+      
+      <!-- aspectJ 方式 -->
+      <bean id="myaroundaspectj" class="com.aop.advice.MyAroundAspectJ"></bean>
+      <aop:config>
+      	<aop:aspect ref="myaroundaspectj">
+      		<aop:pointcut expression="execution(* com.aop.test.AOPTest.test7())" id="mypointaroundAspectj"/>
+      		<aop:pointcut expression="execution(* com.aop.test.AOPTest.test8(String, int)) and args(name,age)" id="mypointaroundAspectj8_args"/>
+      		
+      		<aop:before method="befor" pointcut-ref="mypointaroundAspectj"/>
+      		<aop:after method="after" pointcut-ref="mypointaroundAspectj"/>
+      		<aop:after-returning method="after" pointcut-ref="mypointaroundAspectj"/>
+      		<aop:after-throwing method="throwsEx" pointcut-ref="mypointaroundAspectj" throwing="e"/>
+      		
+      		
+      		<!-- 
+       		<aop:around method="myarround"   pointcut-ref="mypointaroundAspectj8_args"/>
+      		<aop:before method="befor1" arg-names="name,age" pointcut-ref="mypointaroundAspectj8_args"/>     		
+      		 -->
+			<aop:before method="befor1" arg-names="name,age" pointcut-ref="mypointaroundAspectj8_args"/>
+			<aop:around method="myarround" arg-names="name,age"  pointcut-ref="mypointaroundAspectj8_args"/> 
+
+      	</aop:aspect>
+      </aop:config>
+      
+      <!-- 配置环绕通知中方法参数的传递 -->
+      <!-- 
+      		新建类中有通知方法有参数值，此时需要接受来自切点的参数值。
+      		切点：
+      		public void test8(String name,int age) {
+				System.out.println("test8(String str,int i)");
+			}
+      		通知：
+      			public Object myarround(ProceedingJoinPoint p,String name,int age) throws Throwable{
+					System.out.println("====执行环绕...proceed()====");
+					System.out.println("环绕-前置"+"arg1: "+name);
+					Object result = p.proceed();
+					System.out.println("环绕-后置"+"arg2: "+age);
+					System.out.println("====执行环绕...proceed()====");
+					
+					return result;
+				}
+			
+				public void befor1(String name,int age) {
+					System.out.println("环绕-前置...AspectJ"+" befor(String str,int i):"+name+"/"+age);
+				}
+      
+			    此时的切点声明：
+			  <aop:pointcut expression="execution(* com.aop.test.AOPTest.test8(String, int)) and args(name,age)" id="mypointaroundAspectj8_args"/>
+			  		
+			  		、expression="execution(* com.aop.test.AOPTest.test8(String, int)) and args(name,age)"
+			  			com.aop.test.AOPTest.test8(String, int))	//定位到当前方法
+			      		and	//不能使用&& 由 spring 把 and 解析成&&
+			      		args(name,age)	//args(名称) 名称自定义的.顺序和 test8(参数,参数)对应
+			      		
+			      		注意：不能为已经声明参数类型的切点配置没有相应参数类型的通知方法
+			      			 arg-names="name,age"  与 	args(name,age) 
+			      			  要和通知 befor1(String name,int age) 的参数值一一对应
+			      		
+			      	执行顺序与配置顺序相关：			      	
+					<aop:around method="myarround" arg-names="name,age"  pointcut-ref="mypointaroundAspectj8_args"/> 
+					<aop:before method="befor1" arg-names="name,age" pointcut-ref="mypointaroundAspectj8_args"/>
+					
+									      	=====执行环绕...proceed()=====
+											环绕-前置arg1: args1
+											环绕-前置...AspectJ befor(String str,int i):args1/1
+											test8(String str,int i)
+											环绕-后置arg2: 1
+											======执行环绕...proceed()======
+											
+					<aop:before method="befor1" arg-names="name,age" pointcut-ref="mypointaroundAspectj8_args"/>
+					<aop:around method="myarround" arg-names="name,age"  pointcut-ref="mypointaroundAspectj8_args"/> 
+											
+											环绕-前置...AspectJ befor(String str,int i):args1/1
+											=====执行环绕...proceed()=====
+											环绕-前置arg1: args1
+											test8(String str,int i)
+											环绕-后置arg2: 1
+											======执行环绕...proceed()======	
+       -->
+       
+    <!-- 使用注解	基于 Aspect -->
+    <!-- 
+ 					1.1 引入 xmlns:context	
+						引入约束文件
+						<beans xmlns="http://www.springframework.org/schema/beans"
+							    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+							    xmlns:context="http://www.springframework.org/schema/context"
+							    xsi:schemaLocation="
+				        http://www.springframework.org/schema/beans
+				        http://www.springframework.org/schema/beans/spring-beans.xsd
+				        http://www.springframework.org/schema/context
+				        http://www.springframework.org/schema/context/spring-context.xsd">
+				        
+				        xmlns:context="http://www.springframework.org/schema/context"
+					        http://www.springframework.org/schema/context
+					        http://www.springframework.org/schema/context/spring-context.xsd
+ 
+    			1. spring 不会自动去寻找注解,必须告诉 spring 哪些包下的类中可能有注解
+					<context:component-scan base-package=""></context:component-scan>
+							base-package=""	//包名 ", , ,"可以扫描多个，用,隔开
+     -->
+     	<!--  -->
+		<context:component-scan base-package="com.aop.annotationAdivce"></context:component-scan>
+		<!-- 测试类 -->
+		<bean id="annotest" class="com.aop.test.AnnotationTest"></bean>
+		
+		<!-- @Component 标签	 bean<bean id="annotationDemo" class="com.aop.annotationAdivce.AnnotationDemo"></bean>
+				  在类名上定义，默认生成的对象名为类名小写(annotationDemo)	 >>	annotationDemo
+				  也可以自定义指定@Component("custom_annotationDemo")	>>custom_annotationDemo
+			 
+			 @Pointcut 标签 	配置切点<aop:pointcut expression="execution(* com.aop.annotationAdivce.AnnotationDemo.testAnno1())" id="mypoint"/>
+				 在方法上定义，必须指定切入名(mypointanno)	>>名称自定义
+				 但是通常都按全路径名命名 @Pointcut("execution(* com.aop.annotationAdivce.AnnotationDemo.testAnno1())")
+			 
+					@Component
+					public class AnnotationDemo {
+					
+						public AnnotationDemo() {
+							System.out.println("使用注解生成bean... AnnotationDemo");
+						}
+						
+						@Pointcut("execution(* com.aop.annotationAdivce.AnnotationDemo.testAnno1())")
+						public void testAnno1() {
+							System.out.println("AnnotationDemo@Pointcut...testAnno1()");
+						}
+					}
+					
+					>>>
+					@Before 设置事前通知<aop:before method="myBefore" pointcut-ref="com.aop.annotationAdivce.AnnotationDemo.testAnno1()"/>	
+						@Before("")	需要指定对应的切点
+					@Aspect aspectJ 表示通知方法在当前类中    <aop:aspect ref="myaroundaspectj">...</aop:aspect>
+					@After("com.aop.annotationAdivce.AnnotationDemo.testAnno1()")
+					@AfterThrowing("com.aop.annotationAdivce.AnnotationDemo.testAnno1()")
+					@Around("com.aop.annotationAdivce.AnnotationDemo.testAnno1()")
+					
+					@Component
+					@Aspect
+					public class MyAdviceAnno{
+					
+						@Before("com.aop.annotationAdivce.AnnotationDemo.testAnno1()")
+						public void myBefore() {
+							System.out.println("MyAdviceAnno...myBefore()");
+						}
+						
+						@After("com.aop.annotationAdivce.AnnotationDemo.testAnno1()")
+						public void myAfter() {
+							System.out.println("MyAdviceAnno...myAfter()");
+						}
+						
+						@AfterThrowing("com.aop.annotationAdivce.AnnotationDemo.testAnno1()")
+						public void myThrow() {
+							System.out.println("MyAdviceAnno...myThrow()");
+						}
+	
+						@Around("com.aop.annotationAdivce.AnnotationDemo.testAnno1()")
+						public Object myAround(ProceedingJoinPoint p) throws Throwable {
+							
+							System.out.println("环绕-前置...");
+							Object result = p.proceed();
+							System.out.println("环绕-后置...");
+							
+							return result;
+						}
+					}
+					
+					注意输出顺序：
+								环绕-前置...
+								MyAdviceAnno...myBefore()
+								AnnotationDemo@Pointcut...testAnno1()
+								环绕-后置...
+								MyAdviceAnno...myAfter()
+					前置和后置通知队列 为栈顺序：先进后出 [通常不同时出现]
+		 -->
+		 <!-- 
+		 			动态代理
+						为了解决静态代理频繁编写代理功能缺点:
+							JDK 提供的
+							cglib 动态代理
+							
+					proxy-target-class属性值决定是基于接口的还是基于类的代理被创建。
+					如果proxy-target-class 属性值被设置为true，那么基于类的代理将起作用（这时需要cglib库）。
+					如果proxy-target-class 属值被设置为false或者这个属性被省略，那么标准的JDK 基于接口的代理将起作用。
+					即使你未声明 proxy-target-class="true" ，但运行类没有继承接口，spring也会自动使用CGLIB代理。
+					高版本spring自动根据运行类选择 JDK 或 CGLIB 代理                              
+		  -->
+		 <aop:aspectj-autoproxy proxy-target-class="true"></aop:aspectj-autoproxy>
+		 
+														<!-- 自动注入   -->
+	<!-- 
+			1.在 Spring 配置文件中对象名(teacher)和 ref="teacher"	
+			     对象名相同可以使用自动注入,可以不配置<property/>
+			     
+			   		<bean id="teacher" class="com.auto.test.Teacher"></bean>
+					<bean id="people" class="com.auto.test.People">
+						<property name="teacher" ref="teacher"></property>
+					</bean>  	
+					
+					2.两种配置办法
+					
+					<bean id="teacher" class="com.auto.test.Teacher"></bean>
+					<bean id="people" class="com.auto.test.People"	autowire="byName"></bean>
+					
+						2.1    在<bean>中通过 autowire="" 配置,只对这个<bean>生效
+						2.2    在<beans>中通过 default-autowire=""配置,当前文件中所有<bean>都是全局配置内容	
+			
+							autowire="byName"	//bean id="teacher">>ref="teacher"
+							 byName: 通过名称自动注入.在 Spring 容器中找类的 Id
+							 
+						    autowire="byType" 	//bean id="teacherXXX">>ref="teacher"
+							 byType: 根据类型注入
+							 	bean id="teacher1"
+							 	bean id="teacher2"	[X 使用byType不能同时出现两个类型相同bean]
+							 	
+							default: 默认值,根据全局 default-autowire=""值.默认全局和局部都没有配置情况下,相当于 no
+							no: 不自动注入
+							
+							autowire="constructor"
+							 提供对应参数的构造方法(构造方法参数中包含注入对戏那个)
+							 底层使用 byName, 构造方法参数名和其他<bean>的 id相同.
+							 
+							 	public People(Teacher teacher) {//teacher>>bean id="teacher"
+									super();
+									this.teacher = teacher;
+								}
+	 -->													
+		
+		<bean id="teacher" class="com.auto.test.Teacher"></bean>
+		<bean id="people" class="com.auto.test.People"	autowire="byName">
+		</bean>
+        
+        									<!-- 加载 properties 文件 -->
+        <!-- 
+        		1. 在 src 下新建 xxx.properties 文件
+        				jdbc.properties
+        				
+				2. 在 spring 配置文件中先引入 xml约束
+				
+					 xmlns:context="http://www.springframework.org/schema/context"
+					 	http://www.springframework.org/schema/context
+						http://www.springframework.org/schema/context/spring-context.xsd
+				
+				3. 设置文件加载地址
+					    如果需要记载多个配置文件逗号分割	location="classpath:jdbc.properties,classpath:xxx.properties"
+					 <context:property-placeholder location="classpath:jdbc.properties"/>
+        
+        		4. 取值	${KEY}
+        			<bean id="dataSource" class="org.springframework.jdbc.datasource.DriverManagerDataSource">
+			     	<property name="driverClassName" value="${jdbc.driver}"></property>
+			     	<property name="url" value="${jdbc.url}"></property>
+			     	<property name="username" value="${jdbc.user}"></property>
+			     	<property name="password" value="${jdbc.password}"></property>
+			     	</bean>
+			     	
+			    注意：
+			    	如果使用加载 properties 文件方式设置数据库配置信息时，并按原有配置开启了自动注入。此时数据库将无法成功启动。
+			
+					     - 创建sqlSessionFactory对象，数据库连接信息来自dataSource -
+					     <bean id="sqlSessionFactory" class="org.mybatis.spring.SqlSessionFactoryBean">
+					     	<property name="dataSource" ref="dataSource"></property>
+					     </bean>
+		  			
+				      	 < 扫描器：相当于<package name="com.Spr_Mybatis.Mapper"/> ，扫描后会给对应接口创建对象
+				     	 <bean id="mappers" class="org.mybatis.spring.mapper.MapperScannerConfigurer">
+				      	 <! 设置包名 -
+				      	 property name="basePackage" value="com.Spr_Mybatis.Mapper"></property>
+				      	 < 和sqlSessionFactory产生关系，Factory需要加载进Mappers映射文件 
+				      	 <property name="sqlSessionFactory" ref="sqlSessionFactory"></property>
+				      	 </bean>
+				    
+				    =====
+				    <bean id="sqlSessionFactory" class="org.mybatis.spring.SqlSessionFactoryBean">
+ 						.....
+				    <bean id="mappers" class="org.mybatis.spring.mapper.MapperScannerConfigurer">
+				    property name="basePackage" value="com.Spr_Mybatis.Mapper"></property>
+				    <property name="sqlSessionFactory" ref="sqlSessionFactory"></property>
+				    </bean>
+				    
+				    由于bean id="sqlSessionFactory" 和property name="sqlSessionFactory" ref="sqlSessionFactory
+				    名词相同，当默认开启default-autowire=byName自动注入对象属性时， mappers中的sqlSessionFactor将会被自动注入，
+				    此时会去寻找id=sqlSessionFactory,而SqlSessionFactoryBean类又会去加载其中的dataSource属性，
+				  dataSource之后将会进行取值设值，由于是从properties中取值，而properties在加载xml的时候还未被应用，导致dataSource取不到值而报错。
+				    
+				        - SqlSessinFactory对象 -
+					    <bean id="factory" class="org.mybatis.spring.SqlSessionFactoryBean">
+					    	<property name="typeAliasesPackage" value="com.bjsxt.pojo"></property>
+					    </bean>
+					    - 扫描器 -
+					    <bean class="org.mybatis.spring.mapper.MapperScannerConfigurer">
+					    	<property name="basePackage" value="com.bjsxt.mapper"></property>
+					    	<property name="sqlSessionFactoryBeanName" value="factory"></property>
+					    </bean>
+				解决：
+						1.注意避开使用sqlSessionFactory	//bean id="sqlSessionFactory" >> id="factory"
+						2.使用字符串方式设置，来避免对象设值时的自动注入
+							<property name="sqlSessionFactoryBeanName" value="factory"></property>
+							
+				4.1 在被Spring管理的类中为属性设值[不能再servlet中设置，不被spring管理]
+					4.1.1 	key 和属性变量名可以不相同
+					4.1.2 	变量类型任意,只要保证 key 对应的 value 能转换成这个类型就可以.
+								@Value("${my.demo}")
+								private String test;
+         -->										
+        <context:property-placeholder location="classpath:jdbc.properties"/>	
+        
+        							
+        									<!-- Scope标签    属性 -->
+        <!-- 
+        	<bean>的属性,作用:控制对象有效范围(单例,多例等),
+        	<bean/>标签对应的对象默认是单例的.无论获取多少次,都是同一个对象
+        		scope 可取值
+							1 singleton 默认值,单例
+							2 prototype 多例,每次获取重新实例化
+							3 request 每次请求重新实例化
+							4 session 每个会话对象内,对象是单例的.
+							5 application 在 application 对象内是单例
+							6 global session spring 推 出 的 一 个 对 象 , 依 赖 于spring-webmvc-portlet ,类似于 session
+         -->									
+        			
+        									<!-- 声明式事务 -->
+        									
+       <!-- 
+       	
+       		需要引入约束文件：
+       		 				xmlns:tx="http://www.springframework.org/schema/tx"
+       		 				        	 http://www.springframework.org/schema/tx
+       									 http://www.springframework.org/schema/tx/spring-tx.xsd		
+       									 
+       				
+       		事务管理器基于通知(advice)的。在 spring 配置文件中配置声明式事务时需要设置切点。切点范围可以设置大一些 。
+       		通过使用<tx:advice>来声明哪些方法需要有事务控制。
+       		
+					       			- 配置声明式事务 -
+									<tx:advice id="txAdvice" transaction-manager="txManager">
+										<tx:attributes>
+											- 哪些方法需要有事务控制 -
+											- 方法以ins开头事务管理 -
+											<tx:method name="ins*" />
+											<tx:method name="del*"/>
+											<tx:method name="upd*"/>
+											<tx:method name="*" read-only="true"/>
+										</tx:attributes>
+									</tx:advice>
+       		
+       		声明式事务中属性解释
+					1. name="" 哪些方法需要有事务控制
+							支持*通配符
+					2. read-only="boolean" 是否是只读事务.
+							如果为 true,告诉数据库此事务为只读事务.数据化优化,
+							会对性能有一定提升,所以只要是查询的方法,建议使用此数据.
+							如果为 false(默认值),事务需要提交的事务.建议新增,删除,修改.
+					3. propagation 控制事务传播行为.
+							当一个具有事务控制的方法被另一个有事务控制的方法调用后,
+							需要如何管理事务(新建事务?在事务中执行?把事务挂起?报异常?)
+									REQUIRED (默认值): 如果当前有事务,就在事务中执行,如果当前没有事务,新建一个事务.
+									SUPPORTS: 如果当前有事务就在事务中执行,如果当前没有事务,就在非事务状态下执行.
+									MANDATORY:必须在事务内部执行,如果当前有事务,就在事务中执行,如果没有事务,报错.
+									REQUIRES_NEW:必须在事务中执行,如果当前没有事务,新建事务,如果当前有事务,把当前事务挂起.
+									NOT_SUPPORTED:必须在非事务下执行,如果当前没有事务,正常执行,如果当前有事务,把当前事务挂起.
+									NEVER:必须在非事务状态下执行,如果当前没有事务,正常执行,如果当前有事务,报错.
+									NESTED:必须在事务状态下执行.如果没有事务,新建事务,如果当前有事务,创建一个嵌套事务.
+					
+					4. isolation="" 事务隔离级别
+							在多线程或并发访问下如何保证访问到的数据具有完整性的.
+								脏读:
+									一个事务(A)读取到另一个事务(B)中未提交的数据,
+									另一个事务中数据可能进行了改变,此时 A事务读取的数据可能和数据库中数据是不一致的,
+									此时认为数据是脏数据,读取脏数据过程叫做脏读.
+								不可重复读:
+									主要针对的是某行数据.(或行中某列),针对的操作是修改操作.
+									两次读取在同一个事务内,当事务 A 第一次读取事务后,事务 B 对事务 A 读取的数据进行修改,
+									事务 A 中再次读取的数据和之前读取的数据不一致,过程不可重复读.
+								幻读:
+									主要针对的操作是新增或删除,两次事务的结果.
+									事务 A 按照特定条件查询出结果,事务 B 新增了一条符合
+									条件的数据.事务 A 中查询的数据和数据库中的数据不一致的,事
+									务 A 好像出现了幻觉,这种情况称为幻读.
+									
+							EFAULT: 默认值,由底层数据库自动判断应该使用什么隔离界别
+							READ_UNCOMMITTED: 可以读取未提交数据,可能出现脏读,不重复读,幻读.效率最高.
+							READ_COMMITTED:只能读取其他事务已提交数据.可以防止脏读,可能出现不可重复读和幻读.
+							REPEATABLE_READ: 读取的数据被添加锁,防止其他事务修改此数据,可以防止不可重复读.脏读,可能出现幻读.
+							SERIALIZABLE: 排队操作,对整个表添加锁.一个事务在操作数据时,另一个事务等待事务操作完成后才能操作这个表.最安全的效率最低的.
+										
+					5. rollback-for="异常类型全限定路径"		当出现什么异常时需要进行回滚.
+							建议:给定该属性值.手动抛异常一定要给该属性值.
+					6. no-rollback-for=""	当出现什么异常时不滚回事务.
+       		
+        -->
+        <bean id="dataSourcefortx" class="org.springframework.jdbc.datasource.DriverManagerDataSource">
+	     	<property name="driverClassName" value="oracle.jdbc.OracleDriver"></property>
+	     	<property name="url" value="jdbc:oracle:thin:@127.0.0.1:1521:XE"></property>
+	     	<property name="username" value="jdsy1707"></property>
+	     	<property name="password" value="jdsy1707"></property>
+     	</bean>
+        
+        <bean id="txmanager" class="org.springframework.jdbc.datasource.DataSourceTransactionManager">
+        	<property name="dataSource" ref="dataSourcefortx"></property>
+        </bean>
+        
+        <!-- 配置声明式事务 -->
+        <tx:advice id="txadvice" transaction-manager="txmanager">
+        	<tx:attributes>
+        		<!-- 哪些方法需要有事务控制
+        			 ins* 只要方法以ins开头
+        		 -->
+        		<tx:method name="ins*" read-only="false"/>
+        	</tx:attributes>
+        </tx:advice>
+        
+        <aop:config>
+        	<!-- 切点范围设置大一些 -->
+        	<aop:pointcut expression="execution(* com.transaction.service.impl.*.*())" id="insertpoint"/>
+        	<aop:advisor advice-ref="txadvice" pointcut-ref="insertpoint"/>
+        </aop:config>
+        
+        									<!-- Spring 中常用注解 -->
+        <!-- 
+        		1. @Component 创建类对象,相当于配置<bean/>
+				2. @Service 与@Component 功能相同.2.1 写在 ServiceImpl 类上.
+				3. @Repository 与@Component 功能相同.
+					3.1 写在数据访问层类上.
+				4. @Controller 与@Component 功能相同.
+					4.1 写在控制器类上.
+				5. @Resource(不需要写对象的 get/set)
+					5.1 java 中的注解
+					5.2 默认按照 byName 注入,如果没有名称对象,按照 byType 注入
+						5.2.1 建议把对象名称和 spring 容器中对象名相同
+				6. @Autowired(不需要写对象的 get/set)
+					6.1 spring 的注解
+					6.2 默认按照 byType 注入.
+				7. @Value() 获取 properties 文件中内容
+				8. @Pointcut() 定义切点
+				9. @Aspect() 定义切面类
+				10. @Before() 前置通知
+				11. @After 后置通知
+				12. @AfterReturning 后置通知,必须切点正确执行
+				13. @AfterThrowing 异常通知
+				14. @Arround 环绕通知
+         -->									
+        
+        
+        							
+</beans>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
