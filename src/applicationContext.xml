@@ -524,7 +524,7 @@
  
     			1. spring 不会自动去寻找注解,必须告诉 spring 哪些包下的类中可能有注解
 					<context:component-scan base-package=""></context:component-scan>
-							base-package=""	//包名 ", , ,"可以扫描多个，用,隔开
+							base-package=""	//
      -->
      	<!--  -->
 		<context:component-scan base-package="com.aop.annotationAdivce"></context:component-scan>
@@ -642,7 +642,7 @@
 							no: 不自动注入
 							
 							autowire="constructor"
-							 提供对应参数的构造方法(构造方法参数中包含注入对戏那个)
+							 提供对应参数的构造方法(构造方法参数中包含注入的那个对象)
 							 底层使用 byName, 构造方法参数名和其他<bean>的 id相同.
 							 
 							 	public People(Teacher teacher) {//teacher>>bean id="teacher"
